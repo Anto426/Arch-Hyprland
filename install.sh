@@ -75,7 +75,7 @@ ui_done() {
     printf '\n'
 }
 
-AUTO_SETUP_URL="${AUTO_SETUP_URL:-https://raw.githubusercontent.com/Anto426/auto-setup-LT/main/arch.sh}"
+AUTO_SETUP_URL="${AUTO_SETUP_URL:-https://raw.githubusercontent.com/Arch-repo/auto-setup-LT/main/arch.sh}"
 DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/Arch-repo/dotfiles.git}"
 WALLPAPER_REPO="${WALLPAPER_REPO:-https://github.com/Arch-repo/Wallpaper-Collection.git}"
 ANTO_THEME_REPO="${ANTO_THEME_REPO:-https://github.com/Arch-repo/Anto426-theme.git}"
@@ -86,123 +86,6 @@ ANTO_CONFIG_DIR="$DOTFILES_DIR/.config/anto426"
 THEME_BUILD_DIR="${THEME_BUILD_DIR:-$HOME/.cache/anto426-theme}"
 GRUB_THEME_BUILD_DIR="${GRUB_THEME_BUILD_DIR:-$HOME/.cache/anto426-grub-theme}"
 VSCODE_THEME_BUILD_DIR="${VSCODE_THEME_BUILD_DIR:-$HOME/.cache/anto426-vscode-theme}"
-
-pacman_packages=(
-    # Hyprland & Wayland environment
-    hyprland hyprlock awww grim slurp wf-recorder swaync waybar
-    rofi rofi-emoji yad hyprshot
-    xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-wlr xdg-desktop-portal-gtk
-
-    # System services and controls
-    brightnessctl network-manager-applet bluez bluez-utils blueman
-    pipewire pipewire-pulse wireplumber pavucontrol
-
-    # Apps used by the dotfiles
-    ghostty nemo gvfs curl jq git base-devel nodejs npm yarn python python-gobject gtk3 htop loupe celluloid gnome-text-editor evince
-    ffmpeg cava cliphist gnome-characters keepass playerctl wev
-
-    # Qt, display manager, and theming
-    sddm qt5ct qt6ct qt5-wayland qt6-wayland nwg-look kvantum kvantum-qt5
-    sassc gnome-themes-extra
-
-    # Input method
-    fcitx5 fcitx5-gtk fcitx5-qt fcitx5-configtool fcitx5-bamboo
-
-    # Fonts and image libraries
-    ttf-jetbrains-mono-nerd noto-fonts noto-fonts-emoji
-    libvips libheif openslide poppler-glib imagemagick grub
-
-    # Build dependencies for Anto426 rofi with slider support
-    stow meson ninja pkgconf flex bison check pandoc doxygen
-    glib2 cairo pango gdk-pixbuf2 startup-notification
-    libxkbcommon libxcb xcb-util xcb-util-wm xcb-util-cursor xcb-util-keysyms xcb-imdkit
-    wayland wayland-protocols
-)
-
-aur_packages=(
-    # Desktop shell extras
-    wlogout sddm-sugar-candy-git apple_cursor whitesur-icon-theme tint mpvpaper
-
-    # Browsers and editors
-    brave-bin zen-browser-bin visual-studio-code-bin sublime-text-4
-
-    # Fonts
-    ttf-segoe-ui-variable
-)
-
-ensure_yay() {
-    if command -v yay >/dev/null 2>&1; then
-        return 0
-    fi
-
-    local build_dir
-    build_dir="$(mktemp -d)"
-    git clone https://aur.archlinux.org/yay.git "$build_dir/yay"
-    (
-        cd "$build_dir/yay"
-        makepkg -si --noconfirm
-    )
-    rm -rf "$build_dir"
-}
-
-install_hyprland_packages() {
-    sudo pacman -S --needed --noconfirm "${pacman_packages[@]}"
-    ensure_yay
-    yay -S --needed --noconfirm "${aur_packages[@]}"
-}
-
-build_anto426_rofi() {
-    if [[ "${ANTO426_SKIP_ROFI_BUILD:-0}" == "1" ]]; then
-        echo -e "${BLUE}[NOTE]${PINK} ==> Skipping Anto426 rofi build."
-        return 0
-    fi
-
-    local rofi_src="${ANTO426_ROFI_SRC:-$HOME/Git/arch/rofi}"
-    local rofi_repo="${ANTO426_ROFI_REPO:-https://github.com/Arch-repo/rofi}"
-    local build_dir="${ANTO426_ROFI_BUILD_DIR:-$rofi_src/build-anto426}"
-    local prefix="${ANTO426_ROFI_PREFIX:-/usr}"
-
-    if [[ ! -d "$rofi_src/.git" ]]; then
-        echo -e "${BLUE}[NOTE]${PINK} ==> Cloning Anto426 rofi into $rofi_src"
-        mkdir -p "$(dirname "$rofi_src")"
-        git clone --recursive "$rofi_repo" "$rofi_src"
-    else
-        echo -e "${BLUE}[NOTE]${PINK} ==> Using existing Anto426 rofi checkout: $rofi_src"
-        (
-            cd "$rofi_src"
-            git submodule update --init --recursive
-        )
-    fi
-
-    if [[ ! -f "$build_dir/build.ninja" ]]; then
-        meson setup "$build_dir" "$rofi_src" --prefix "$prefix"
-    else
-        meson setup --reconfigure "$build_dir" "$rofi_src" --prefix "$prefix"
-    fi
-
-    meson compile -C "$build_dir"
-    sudo meson install -C "$build_dir"
-
-    # Clean up old local build if it exists
-    rm -rf "$HOME/.local/rofi-anto426"
-    rm -f "$HOME/.local/bin/rofi"
-
-    # Prevent future system updates from overwriting the custom build
-    if ! grep -q "^IgnorePkg.*=.*rofi" /etc/pacman.conf; then
-        echo -e "${BLUE}[NOTE]${PINK} ==> Adding rofi to IgnorePkg in /etc/pacman.conf..."
-        if grep -q "^#IgnorePkg" /etc/pacman.conf; then
-            sudo sed -i 's/^#IgnorePkg\s*=/IgnorePkg = rofi/' /etc/pacman.conf
-        else
-            sudo sed -i '/\[options\]/a IgnorePkg = rofi' /etc/pacman.conf
-        fi
-    fi
-
-    if "/usr/bin/rofi" -help 2>&1 | grep -Fq -- "-slider-change-command"; then
-        echo -e "${GREEN}[OK]${PINK} ==> Anto426 rofi installed system-wide with slider support."
-    else
-        echo -e "${BLUE}[NOTE]${PINK} ==> Anto426 rofi installed, but slider dmenu option was not detected."
-    fi
-}
 
 clone_or_update_repo() {
     local repo="$1"
@@ -325,6 +208,23 @@ detect_display_resolution() {
 
 install_dotfiles_repo() {
     clone_or_update_repo "$DOTFILES_REPO" "$DOTFILES_DIR"
+}
+
+install_dotfiles_package_set() {
+    local installer="$ANTO_CONFIG_DIR/install_archpkg.sh"
+
+    if [[ "${ANTO426_SKIP_DOTFILES_PACKAGES:-0}" == "1" ]]; then
+        ui_note "Skipping dotfiles package installer."
+        return 0
+    fi
+
+    if [[ ! -f "$installer" ]]; then
+        ui_error "Dotfiles package installer not found: $installer"
+        exit 1
+    fi
+
+    chmod +x "$installer"
+    "$installer"
 }
 
 install_anto426_theme() {
@@ -554,7 +454,7 @@ run_auto_setup() {
     setup_script="$(mktemp)"
 
     curl -fSL "$AUTO_SETUP_URL" -o "$setup_script"
-    DOTFILES_REPO="$DOTFILES_REPO" bash "$setup_script"
+    AUTO_SETUP_EMBEDDED=1 DOTFILES_REPO="$DOTFILES_REPO" bash "$setup_script"
     rm -f "$setup_script"
 }
 
@@ -662,30 +562,36 @@ esac
 cd ~
 
 # Full system update
-ui_step 1 12 "Updating system packages"
+ui_step 1 14 "Updating system packages"
 sudo pacman -Syu --noconfirm
 
-# Launch auto-setup script and download all the dotfiles
-ui_step 2 12 "Setting up terminal and dotfiles"
+# Launch auto-setup script for terminal tooling
+ui_step 2 14 "Setting up terminal tooling"
 sleep 0.5
 run_auto_setup
+
+# Download all the dotfiles
+ui_step 3 14 "Cloning dotfiles"
 install_dotfiles_repo
 ensure_dotfiles_ready
 
 # Make all dotfiles scripts executable
-ui_step 3 12 "Making dotfiles scripts executable"
+ui_step 4 14 "Making dotfiles scripts executable"
 find "$ANTO_CONFIG_DIR" -type f -name "*.sh" -exec chmod +x {} +
 
+# Install the required dotfiles package set
+ui_step 5 14 "Installing dotfiles package set"
+sleep 0.5
+install_dotfiles_package_set
+
 # Download wallpapers and terminal images
-ui_step 4 12 "Downloading wallpapers and terminal assets"
+ui_step 6 14 "Downloading wallpapers and terminal assets"
 install_assets
 init_dotfiles_sync_config
 
-# Install the required packages
-ui_step 5 12 "Installing packages and themes"
+# Install the external visual themes
+ui_step 7 14 "Installing external themes"
 sleep 0.5
-install_hyprland_packages
-build_anto426_rofi
 install_anto426_theme
 install_anto426_grub_theme
 install_anto426_vscode_theme
@@ -693,14 +599,14 @@ setup_dynamic_theme_permissions
 "$ANTO_CONFIG_DIR/gtkthemes.sh" || true
 
 # enable bluetooth & networkmanager
-ui_step 6 12 "Enabling Bluetooth and NetworkManager"
+ui_step 8 14 "Enabling Bluetooth and NetworkManager"
 sleep 0.5
 sudo systemctl enable --now bluetooth
 sudo systemctl enable --now NetworkManager
 configure_power_button_policy
 
 # Set Ghostty as default terminal emulator for Nemo
-ui_step 7 12 "Setting Ghostty as Nemo terminal"
+ui_step 9 14 "Setting Ghostty as Nemo terminal"
 if command -v gsettings >/dev/null 2>&1 &&
     [[ "$(gsettings writable org.cinnamon.desktop.default-applications.terminal exec 2>/dev/null)" == "true" ]]; then
     gsettings set org.cinnamon.desktop.default-applications.terminal exec ghostty
@@ -709,25 +615,30 @@ else
 fi
 
 # Apply fonts
-ui_step 8 12 "Refreshing font cache"
+ui_step 10 14 "Refreshing font cache"
 fc-cache -fv
 
 # Set cursor
-ui_step 9 12 "Applying cursor theme"
+ui_step 11 14 "Applying cursor theme"
 "$ANTO_CONFIG_DIR/setcursor.sh"
 
 # Stow
-ui_step 10 12 "Stowing dotfiles"
+ui_step 12 14 "Stowing dotfiles"
+if [[ -x "$ANTO_CONFIG_DIR/backup_config.sh" ]]; then
+    "$ANTO_CONFIG_DIR/backup_config.sh"
+else
+    ui_note "backup_config.sh not found, stowing without automatic backup."
+fi
 cd "$DOTFILES_DIR"
 stow -t ~ .
 cd ~
 
 # Generate initial dynamic colors after the dotfiles symlinks exist
-ui_step 11 12 "Generating initial dynamic colors"
+ui_step 13 14 "Generating initial dynamic colors"
 apply_initial_dynamic_theme
 
 # Setup display manager
-ui_step 12 12 "Configuring SDDM display manager"
+ui_step 14 14 "Configuring SDDM display manager"
 configure_hyprland_session
 configure_sddm
 
@@ -744,4 +655,3 @@ printf -v minutes "%02d" "$minutes"
 printf -v seconds "%02d" "$seconds"
 
 ui_done "$duration" "$hours" "$minutes" "$seconds"
-

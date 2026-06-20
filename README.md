@@ -72,9 +72,10 @@ chmod +x install.sh
 
 ### 📂 Repository Targets
 
-The installer manages and updates the following upstream targets:
+The installer is the desktop entrypoint. It calls each repository for its own job instead of duplicating their installers:
 
 ```bash
+AUTO_SETUP_URL=https://raw.githubusercontent.com/Arch-repo/auto-setup-LT/main/arch.sh
 DOTFILES_REPO=https://github.com/Arch-repo/dotfiles.git
 WALLPAPER_REPO=https://github.com/Arch-repo/Wallpaper-Collection.git
 ANTO_THEME_REPO=https://github.com/Arch-repo/Anto426-theme.git
@@ -82,6 +83,10 @@ ANTO_GRUB_THEME_REPO=https://github.com/Arch-repo/grub2-themes.git
 ANTO_VSCODE_THEME_REPO=https://github.com/Arch-repo/vscodetheme.git
 ANTO426_ROFI_REPO=https://github.com/Arch-repo/rofi
 ```
+
+- `auto-setup-LT` runs in embedded mode here and installs terminal/base tooling only.
+- `dotfiles/.config/anto426/install_archpkg.sh` owns Hyprland/dotfiles packages, helper builds, custom Rofi, and wallpaper apps.
+- `Arch-Hyprland` owns orchestration, wallpapers, external themes, SDDM, session setup, and first-run dynamic theme generation.
 
 ### 🎨 Integrated Sub-Themes
 
@@ -112,4 +117,3 @@ root@anto426: ~/arch-hyprland (main⚡)$ cat inspirations.log
 <div align="center">
   <i>Configured by anto426</i>
 </div>
-
