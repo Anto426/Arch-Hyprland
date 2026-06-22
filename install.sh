@@ -472,7 +472,47 @@ copy_assets_dir() {
     [[ -d "$source_dir" ]] || return 0
 
     mkdir -p "$target_dir"
-    cp -rn "$source_dir/." "$target_dir/"
+    cp -af "$source_dir/." "$target_dir/"
+}
+
+mirror_assets_dir() {
+    local source_dir="$1"
+    local target_dir="$2"
+
+    [[ -d "$source_dir" ]] || return 0
+
+    mkdir -p "$target_dir"
+    find "$target_dir" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    cp -af "$source_dir/." "$target_dir/"
+}
+
+seed_assets_dir() {
+    local source_dir="$1"
+    local target_dir="$2"
+
+    [[ -d "$source_dir" ]] || return 0
+
+    if [[ -d "$target_dir" ]] && find "$target_dir" -mindepth 1 -maxdepth 1 -print -quit | grep -q .; then
+        ui_note "Keeping existing assets in $target_dir."
+        return 0
+    fi
+
+    mkdir -p "$target_dir"
+    cp -af "$source_dir/." "$target_dir/"
+}
+
+clear_fastfetch_neofetch_cache() {
+    local source_dir="${ANTO426_NEOFETCH_DIR:-$HOME/Pictures/neofetch}"
+    local cache_home cache_dir
+
+    [[ "$source_dir" == /* && "$source_dir" != "/" ]] || return 0
+
+    for cache_home in "$HOME/.cache" "${XDG_CACHE_HOME:-}"; do
+        [[ -n "$cache_home" ]] || continue
+        cache_dir="$cache_home/fastfetch/images$source_dir"
+        [[ "$cache_dir" == "$cache_home/fastfetch/images/"* ]] || continue
+        rm -rf "$cache_dir"
+    done
 }
 
 install_assets() {
@@ -482,7 +522,8 @@ install_assets() {
     git clone --depth 1 "$WALLPAPER_REPO" "$assets_dir"
 
     copy_assets_dir "$assets_dir/Wallpapers" "$HOME/Pictures/Wallpapers"
-    copy_assets_dir "$assets_dir/neofetch" "$HOME/Pictures/neofetch"
+    seed_assets_dir "$assets_dir/neofetch" "$HOME/Pictures/neofetch"
+    clear_fastfetch_neofetch_cache
 
     rm -rf "$assets_dir"
 }
