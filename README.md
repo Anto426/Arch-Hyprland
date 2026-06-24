@@ -81,6 +81,7 @@ WALLPAPER_REPO=https://github.com/Arch-repo/Wallpaper-Collection.git
 ANTO_THEME_REPO=https://github.com/Arch-repo/Anto426-theme.git
 ANTO_GRUB_THEME_REPO=https://github.com/Arch-repo/grub2-themes.git
 ANTO_VSCODE_THEME_REPO=https://github.com/Arch-repo/vscodetheme.git
+ANTO426_HYPRQUICKPAPER_REPO=https://github.com/Arch-repo/hyprquickpaper.git
 ANTO426_ROFI_REPO=https://github.com/Arch-repo/rofi
 ```
 
@@ -92,6 +93,7 @@ ANTO426_ROFI_REPO=https://github.com/Arch-repo/rofi
 
 - 🖌️ **GTK Base Theme**: [`Anto426-theme`](https://github.com/Arch-repo/Anto426-theme) stable Orchard fork primary base.
 - 🎛️ **Custom Rofi Menu**: [`rofi`](https://github.com/Arch-repo/rofi) Wayland fork enabling sliders.
+- 🖼️ **Wallpaper Selector**: [`hyprquickpaper`](https://github.com/Arch-repo/hyprquickpaper) Quickshell fork used by the wallpaper picker.
 - 🧩 **VSCode Integration**: [`vscodetheme`](https://github.com/Arch-repo/vscodetheme) exposing the dynamic theme file.
 - 🗂️ **Boot Customization**: [`grub2-themes`](https://github.com/Arch-repo/grub2-themes) specializing in high DPI/resolution boots.
 

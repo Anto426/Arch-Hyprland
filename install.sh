@@ -81,6 +81,7 @@ WALLPAPER_REPO="${WALLPAPER_REPO:-https://github.com/Arch-repo/Wallpaper-Collect
 ANTO_THEME_REPO="${ANTO_THEME_REPO:-https://github.com/Arch-repo/Anto426-theme.git}"
 ANTO_GRUB_THEME_REPO="${ANTO_GRUB_THEME_REPO:-https://github.com/Arch-repo/grub2-themes.git}"
 ANTO_VSCODE_THEME_REPO="${ANTO_VSCODE_THEME_REPO:-https://github.com/Arch-repo/vscodetheme.git}"
+ANTO426_HYPRQUICKPAPER_REPO="${ANTO426_HYPRQUICKPAPER_REPO:-https://github.com/Arch-repo/hyprquickpaper.git}"
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
 ANTO_CONFIG_DIR="$DOTFILES_DIR/.config/anto426"
 THEME_BUILD_DIR="${THEME_BUILD_DIR:-$HOME/.cache/anto426-theme}"
@@ -224,7 +225,7 @@ install_dotfiles_package_set() {
     fi
 
     chmod +x "$installer"
-    "$installer"
+    ANTO426_HYPRQUICKPAPER_REPO="$ANTO426_HYPRQUICKPAPER_REPO" "$installer"
 }
 
 install_anto426_theme() {
